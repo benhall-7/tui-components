@@ -1,6 +1,8 @@
 [package]
 name = "tui-components"
 version = "0.1.0"
+authors = ["BenHall-7 <Benjaminjahall@gmail.com>"]
+license = "MIT"
 edition = "2018"
 
 [dependencies]
