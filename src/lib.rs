@@ -53,10 +53,10 @@ pub enum AppResponse {
     None,
 }
 
-pub fn run<A: App>(app: &mut A) -> Result<(), ErrorKind> {
+pub fn run<A: App>(app: &mut A, title: Option<String>) -> Result<(), ErrorKind> {
     let mut should_refresh = true;
 
-    let mut t = setup_terminal()?;
+    let mut t = setup_terminal(title)?;
 
     loop {
         if should_refresh {
@@ -87,12 +87,13 @@ pub fn run<A: App>(app: &mut A) -> Result<(), ErrorKind> {
     Ok(())
 }
 
-fn setup_terminal() -> Result<Terminal<CrosstermBackend<Stdout>>, ErrorKind> {
-    execute!(
-        stdout(),
-        SetTitle("prickly - prc file editor"),
-        EnterAlternateScreen
-    )?;
+fn setup_terminal(title: Option<String>) -> Result<Terminal<CrosstermBackend<Stdout>>, ErrorKind> {
+    if let Some(title) = title {
+        execute!(stdout(), SetTitle(&title), EnterAlternateScreen)?;
+    } else {
+        execute!(stdout(), EnterAlternateScreen)?;
+    }
+
     enable_raw_mode()?;
     let mut t = Terminal::new(CrosstermBackend::new(stdout())).unwrap();
     t.clear().unwrap();
