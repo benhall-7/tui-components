@@ -1,0 +1,8 @@
+[package]
+name = "tui-components"
+version = "0.1.0"
+edition = "2018"
+
+[dependencies]
+tui = { version = "0.16.0", features = ["crossterm"] }
+crossterm = "0.20"
