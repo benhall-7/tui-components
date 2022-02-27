@@ -118,6 +118,7 @@ pub enum ExplorerResponse {
 
 impl Component for Explorer {
     type Response = ExplorerResponse;
+    type DrawResponse = ();
 
     fn handle_event(&mut self, event: Event) -> Self::Response {
         if let Some((overwrite, path)) = &mut self.confirm_overwrite {

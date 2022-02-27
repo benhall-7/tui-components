@@ -30,10 +30,11 @@ impl<'a, A: App> Widget for Wrapper<'a, A> {
 /// A trait enabling a nested layout of structs
 pub trait Component {
     type Response;
+    type DrawResponse;
 
     fn handle_event(&mut self, event: Event) -> Self::Response;
 
-    fn draw(&mut self, rect: Rect, buffer: &mut Buffer);
+    fn draw(&mut self, rect: Rect, buffer: &mut Buffer) -> Self::DrawResponse;
 }
 
 pub trait App {

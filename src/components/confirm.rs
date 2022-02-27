@@ -31,6 +31,7 @@ impl Confirm {
 
 impl Component for Confirm {
     type Response = ConfirmResponse;
+    type DrawResponse = ();
 
     fn handle_event(&mut self, event: Event) -> Self::Response {
         if let Event::Key(key_event) = event {
