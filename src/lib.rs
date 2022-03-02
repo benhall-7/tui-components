@@ -6,9 +6,7 @@ use std::time::Duration;
 
 use crossterm::event::{poll, read, Event as TermEvent, KeyEvent, MouseEvent};
 use crossterm::execute;
-use crossterm::terminal::{
-    disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen, SetTitle,
-};
+use crossterm::terminal::{disable_raw_mode, enable_raw_mode, SetTitle};
 use crossterm::ErrorKind;
 use tui::backend::CrosstermBackend;
 use tui::buffer::Buffer;
@@ -90,9 +88,7 @@ pub fn run<A: App>(app: &mut A, title: Option<String>) -> Result<(), ErrorKind> 
 
 fn setup_terminal(title: Option<String>) -> Result<Terminal<CrosstermBackend<Stdout>>, ErrorKind> {
     if let Some(title) = title {
-        execute!(stdout(), SetTitle(&title), EnterAlternateScreen)?;
-    } else {
-        execute!(stdout(), EnterAlternateScreen)?;
+        execute!(stdout(), SetTitle(&title))?;
     }
 
     enable_raw_mode()?;
@@ -101,9 +97,7 @@ fn setup_terminal(title: Option<String>) -> Result<Terminal<CrosstermBackend<Std
     Ok(t)
 }
 
-fn close_terminal(t: &mut Terminal<CrosstermBackend<Stdout>>) -> Result<(), ErrorKind> {
+fn close_terminal(_t: &mut Terminal<CrosstermBackend<Stdout>>) -> Result<(), ErrorKind> {
     disable_raw_mode()?;
-    execute!(stdout(), LeaveAlternateScreen)?;
-    t.clear().unwrap();
     Ok(())
 }
