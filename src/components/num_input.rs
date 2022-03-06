@@ -30,7 +30,7 @@ impl<T: InputSignedInt> SignedIntInput<T> {
     pub fn new(initial_value: T) -> Self {
         Self {
             current: initial_value,
-            negative: false,
+            negative: initial_value.is_negative(),
         }
     }
 
