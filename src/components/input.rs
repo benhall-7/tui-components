@@ -1,9 +1,9 @@
+use crate::span_builder::SpanBuilder;
 use crate::{Component, Event};
 use crossterm::event::KeyCode;
 use tui::buffer::Buffer;
 use tui::layout::Rect;
 use tui::style::Style;
-use tui::text::{Span, Spans};
 use tui::widgets::{Paragraph, Widget};
 
 #[derive(Debug, Default, Clone)]
@@ -33,20 +33,18 @@ impl Input {
         self
     }
 
-    pub fn get_spans(&self) -> Spans {
-        let mut spans = vec![];
+    pub fn get_span_builder(&self) -> SpanBuilder {
+        let mut spans = SpanBuilder::default();
         if self.focused {
-            spans.extend(vec![
-                Span::raw("> "),
-                Span::styled(&self.value, self.editing_style),
-            ]);
+            spans.push(String::from("> "), Style::default());
+            spans.push(self.value.clone(), self.editing_style);
             if let Some(e) = &self.error {
-                spans.extend(vec![Span::raw(" "), Span::styled(e, self.error_style)]);
+                spans.push(format!(" {}", e), self.error_style);
             }
         } else if self.error.is_some() {
-            spans.push(Span::styled(&self.value, self.error_style));
+            spans.push(self.value.clone(), self.error_style);
         } else {
-            spans.push(Span::styled(&self.value, self.text_style));
+            spans.push(self.value.clone(), self.text_style);
         }
         spans.into()
     }
@@ -85,7 +83,7 @@ impl Component for Input {
     }
 
     fn draw(&mut self, rect: Rect, buf: &mut Buffer) {
-        let p = Paragraph::new(self.get_spans());
+        let p = Paragraph::new(self.get_span_builder().get_spans());
         p.render(rect, buf);
     }
 }
