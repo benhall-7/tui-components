@@ -4,7 +4,7 @@ use tui::{buffer::Buffer, layout::Rect, widgets::{Paragraph, Widget}, text::{Spa
 use crate::{Component, Event, span_builder::SpanBuilder};
 
 pub const TRUE_CHAR: char = '☑';
-pub const FALSE_CHAR: char = '☒';
+pub const FALSE_CHAR: char = '☐';
 
 #[derive(Debug, Default)]
 pub struct Checkbox {
