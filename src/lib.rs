@@ -12,6 +12,7 @@ use crossterm::ErrorKind;
 use tui::backend::CrosstermBackend;
 use tui::buffer::Buffer;
 use tui::layout::Rect;
+use tui::text::Spans;
 use tui::widgets::Widget;
 use tui::Terminal;
 
@@ -26,7 +27,7 @@ impl<'a, A: App> Widget for Wrapper<'a, A> {
     }
 }
 
-/// A trait enabling a nested layout of structs
+/// A trait enabling a nested layout of UI components
 pub trait Component {
     type Response;
     type DrawResponse;
@@ -36,10 +37,16 @@ pub trait Component {
     fn draw(&mut self, rect: Rect, buffer: &mut Buffer) -> Self::DrawResponse;
 }
 
+// A trait representing a top-level component
 pub trait App {
     fn handle_event(&mut self, event: Event) -> AppResponse;
 
     fn draw(&mut self, rect: Rect, buffer: &mut Buffer);
+}
+
+/// A trait for components that can be rendered as spans
+pub trait Spannable {
+    fn get_spans<'a, 'b>(&'a self) -> Spans<'b>;
 }
 
 #[derive(Debug, Copy, Clone)]

@@ -1,7 +1,13 @@
 use crossterm::event::KeyCode;
-use tui::{buffer::Buffer, layout::Rect, widgets::{Paragraph, Widget}, text::{Spans, Span}, style::{Style, Color}};
+use tui::{
+    buffer::Buffer,
+    layout::Rect,
+    style::{Color, Style},
+    text::{Span, Spans},
+    widgets::{Paragraph, Widget},
+};
 
-use crate::{Component, Event, span_builder::SpanBuilder};
+use crate::{span_builder::SpanBuilder, Component, Event, Spannable};
 
 pub const TRUE_CHAR: char = '☑';
 pub const FALSE_CHAR: char = '☐';
@@ -18,17 +24,6 @@ impl Checkbox {
 
     pub fn invert(&mut self) {
         self.value = !self.value;
-    }
-
-    pub fn get_span_builder(&self) -> SpanBuilder {
-        let mut spans = SpanBuilder::default();
-        spans.push("> ".into(), Style::default());
-        if self.value {
-            spans.push(TRUE_CHAR.to_string(), Style::default().fg(Color::Green));
-        } else {
-            spans.push(FALSE_CHAR.to_string(), Style::default().fg(Color::Yellow));
-        }
-        spans
     }
 }
 
@@ -75,9 +70,28 @@ impl Component for Checkbox {
                 Span::styled(TRUE_CHAR.to_string(), Style::default().fg(Color::Green))
             } else {
                 Span::styled(FALSE_CHAR.to_string(), Style::default().fg(Color::Red))
-            }
+            },
         ]);
         let paragraph = Paragraph::new(spans);
         Widget::render(paragraph, rect, buffer);
+    }
+}
+
+impl Spannable for Checkbox {
+    fn get_spans<'a, 'b>(&'a self) -> Spans<'b> {
+        let mut spans = Spans::default();
+        spans.0.push(Span::raw(String::from("> ")));
+        if self.value {
+            spans.0.push(Span::styled(
+                TRUE_CHAR.to_string(),
+                Style::default().fg(Color::Green),
+            ));
+        } else {
+            spans.0.push(Span::styled(
+                FALSE_CHAR.to_string(),
+                Style::default().fg(Color::Yellow),
+            ));
+        }
+        spans
     }
 }

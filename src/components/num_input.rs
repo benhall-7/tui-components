@@ -5,11 +5,12 @@ use crossterm::event::KeyCode;
 use num::traits::{FromPrimitive, SaturatingAdd, SaturatingMul, SaturatingSub};
 use num::{Bounded, Float, Integer, Signed, Unsigned};
 use tui::style::{Color, Style};
+use tui::text::{Span, Spans};
 use tui::widgets::{Paragraph, Widget};
 use tui::{buffer::Buffer, layout::Rect};
 
 use crate::span_builder::SpanBuilder;
-use crate::{Component, Event};
+use crate::{Component, Event, Spannable};
 
 #[derive(Debug, Clone, Copy)]
 pub enum NumInputResponse {
@@ -88,37 +89,6 @@ impl<T: InputSignedInt> SignedIntInput<T> {
             false
         }
     }
-
-    pub fn get_span_builder(&self) -> SpanBuilder {
-        let mut builder = SpanBuilder::default();
-        builder.push(
-            String::from(if self.negative { "- " } else { "+ " }),
-            Style::default().fg(Color::Green),
-        );
-        let number_no_sign = if self.current.is_negative() {
-            let base = format!("{}", self.current);
-            if !base.is_empty() {
-                String::from(&format!("{}", self.current)[1..])
-            } else {
-                base
-            }
-        } else {
-            format!("{}", self.current)
-        };
-        builder.push(number_no_sign, Style::default());
-        if self.current == T::max_value() {
-            builder.push(
-                String::from(" (max value)"),
-                Style::default().fg(Color::Gray),
-            )
-        } else if self.current == T::min_value() {
-            builder.push(
-                String::from(" (min value)"),
-                Style::default().fg(Color::Gray),
-            )
-        }
-        builder
-    }
 }
 
 impl<T: InputSignedInt> Component for SignedIntInput<T> {
@@ -151,9 +121,41 @@ impl<T: InputSignedInt> Component for SignedIntInput<T> {
     }
 
     fn draw(&mut self, rect: Rect, buffer: &mut Buffer) -> Self::DrawResponse {
-        let span_builder = self.get_span_builder();
-        let text = Paragraph::new(span_builder.get_spans());
+        let text = Paragraph::new(self.get_spans());
         Widget::render(text, rect, buffer);
+    }
+}
+
+impl<T: InputSignedInt> Spannable for SignedIntInput<T> {
+    fn get_spans<'a, 'b>(&'a self) -> tui::text::Spans<'b> {
+        let mut spans = Spans::default();
+        spans.0.push(Span::styled(
+            String::from(if self.negative { "- " } else { "+ " }),
+            Style::default().fg(Color::Green),
+        ));
+        let number_no_sign = if self.current.is_negative() {
+            let base = format!("{}", self.current);
+            if !base.is_empty() {
+                String::from(&format!("{}", self.current)[1..])
+            } else {
+                base
+            }
+        } else {
+            format!("{}", self.current)
+        };
+        spans.0.push(Span::raw(number_no_sign));
+        if self.current == T::max_value() {
+            spans.0.push(Span::styled(
+                String::from(" (max value)"),
+                Style::default().fg(Color::Gray),
+            ))
+        } else if self.current == T::min_value() {
+            spans.0.push(Span::styled(
+                String::from(" (min value)"),
+                Style::default().fg(Color::Gray),
+            ))
+        }
+        spans
     }
 }
 
@@ -208,24 +210,6 @@ impl<T: InputUnsignedInt> UnsignedIntInput<T> {
             false
         }
     }
-
-    pub fn get_span_builder(&self) -> SpanBuilder {
-        let mut builder = SpanBuilder::default();
-        builder.push(String::from("> "), Style::default().fg(Color::Green));
-        builder.push(format!("{}", self.current), Style::default());
-        if self.current == T::max_value() {
-            builder.push(
-                String::from(" (max value)"),
-                Style::default().fg(Color::Gray),
-            )
-        } else if self.current == T::min_value() {
-            builder.push(
-                String::from(" (min value)"),
-                Style::default().fg(Color::Gray),
-            )
-        }
-        builder
-    }
 }
 
 impl<T: InputUnsignedInt> Component for UnsignedIntInput<T> {
@@ -256,9 +240,31 @@ impl<T: InputUnsignedInt> Component for UnsignedIntInput<T> {
     }
 
     fn draw(&mut self, rect: Rect, buffer: &mut Buffer) -> Self::DrawResponse {
-        let span_builder = self.get_span_builder();
-        let text = Paragraph::new(span_builder.get_spans());
+        let text = Paragraph::new(self.get_spans());
         Widget::render(text, rect, buffer);
+    }
+}
+
+impl<T: InputUnsignedInt> Spannable for UnsignedIntInput<T> {
+    fn get_spans<'a, 'b>(&'a self) -> Spans<'b> {
+        let mut spans = Spans::default();
+        spans.0.push(Span::styled(
+            String::from("> "),
+            Style::default().fg(Color::Green),
+        ));
+        spans.0.push(Span::raw(format!("{}", self.current)));
+        if self.current == T::max_value() {
+            spans.0.push(Span::styled(
+                String::from(" (max value)"),
+                Style::default().fg(Color::Gray),
+            ))
+        } else if self.current == T::min_value() {
+            spans.0.push(Span::styled(
+                String::from(" (min value)"),
+                Style::default().fg(Color::Gray),
+            ))
+        }
+        spans
     }
 }
 
@@ -407,41 +413,6 @@ impl<T: InputFloat> FloatInput<T> {
             }
         }
     }
-
-    pub fn get_span_builder(&self) -> SpanBuilder {
-        let mut builder = SpanBuilder::default();
-        match &self.value {
-            FloatValue::Infinity { negative } => {
-                builder.push(
-                    String::from(if *negative { "- " } else { "+ " }),
-                    Style::default().fg(Color::Green),
-                );
-                builder.push(T::infinity().to_string(), Style::default());
-            }
-            FloatValue::Nan => {
-                builder.push(String::from("> "), Style::default().fg(Color::Green));
-                builder.push(T::nan().to_string(), Style::default());
-            }
-            FloatValue::Number(number) => {
-                let whole_part = if number.whole.is_empty() {
-                    "0"
-                } else {
-                    &number.whole
-                };
-                let entire = if let Some(integral) = &number.integral {
-                    format!("{}.{}", whole_part, integral)
-                } else {
-                    whole_part.to_string()
-                };
-                builder.push(
-                    String::from(if number.negative { "- " } else { "+ " }),
-                    Style::default().fg(Color::Green),
-                );
-                builder.push(entire, Style::default());
-            }
-        }
-        builder
-    }
 }
 
 impl<T: InputFloat> Component for FloatInput<T> {
@@ -489,9 +460,48 @@ impl<T: InputFloat> Component for FloatInput<T> {
     }
 
     fn draw(&mut self, rect: Rect, buffer: &mut Buffer) -> Self::DrawResponse {
-        let span_builder = self.get_span_builder();
-        let text = Paragraph::new(span_builder.get_spans());
+        let text = Paragraph::new(self.get_spans());
         Widget::render(text, rect, buffer);
+    }
+}
+
+impl<T: InputFloat> Spannable for FloatInput<T> {
+    fn get_spans<'a, 'b>(&'a self) -> Spans<'b> {
+        let mut spans = Spans::default();
+        match &self.value {
+            FloatValue::Infinity { negative } => {
+                spans.0.push(Span::styled(
+                    String::from(if *negative { "- " } else { "+ " }),
+                    Style::default().fg(Color::Green),
+                ));
+                spans.0.push(Span::raw(T::infinity().to_string()));
+            }
+            FloatValue::Nan => {
+                spans.0.push(Span::styled(
+                    String::from("> "),
+                    Style::default().fg(Color::Green),
+                ));
+                spans.0.push(Span::raw(T::nan().to_string()));
+            }
+            FloatValue::Number(number) => {
+                let whole_part = if number.whole.is_empty() {
+                    "0"
+                } else {
+                    &number.whole
+                };
+                let entire = if let Some(integral) = &number.integral {
+                    format!("{}.{}", whole_part, integral)
+                } else {
+                    whole_part.to_string()
+                };
+                spans.0.push(Span::styled(
+                    String::from(if number.negative { "- " } else { "+ " }),
+                    Style::default().fg(Color::Green),
+                ));
+                spans.0.push(Span::raw(entire));
+            }
+        }
+        spans
     }
 }
 
