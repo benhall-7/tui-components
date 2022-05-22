@@ -1,5 +1,5 @@
-use crate::{Component, Event};
 use crate::rect_ext::RectExt;
+use crate::{Component, Event};
 use crossterm::event::KeyCode;
 use tui::buffer::Buffer;
 use tui::layout::{Alignment, Rect};

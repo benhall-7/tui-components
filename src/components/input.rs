@@ -1,4 +1,3 @@
-use crate::span_builder::SpanBuilder;
 use crate::{Component, Event, Spannable};
 use crossterm::event::KeyCode;
 use tui::buffer::Buffer;
@@ -73,8 +72,7 @@ impl Component for Input {
     }
 }
 
-impl Spannable for Input
-{
+impl Spannable for Input {
     fn get_spans<'a, 'b>(&'a self) -> Spans<'b> {
         let mut spans = Spans::default();
         if self.focused {

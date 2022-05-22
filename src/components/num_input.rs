@@ -9,7 +9,6 @@ use tui::text::{Span, Spans};
 use tui::widgets::{Paragraph, Widget};
 use tui::{buffer::Buffer, layout::Rect};
 
-use crate::span_builder::SpanBuilder;
 use crate::{Component, Event, Spannable};
 
 #[derive(Debug, Clone, Copy)]

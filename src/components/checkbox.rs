@@ -7,7 +7,7 @@ use tui::{
     widgets::{Paragraph, Widget},
 };
 
-use crate::{span_builder::SpanBuilder, Component, Event, Spannable};
+use crate::{Component, Event, Spannable};
 
 pub const TRUE_CHAR: char = '☑';
 pub const FALSE_CHAR: char = '☐';
