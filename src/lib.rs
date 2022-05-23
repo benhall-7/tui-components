@@ -1,6 +1,5 @@
 pub mod components;
 pub mod rect_ext;
-pub mod span_builder;
 
 use std::io::{stdout, Stdout};
 use std::time::Duration;
