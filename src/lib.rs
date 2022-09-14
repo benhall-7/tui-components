@@ -1,6 +1,7 @@
 pub mod components;
 pub mod rect_ext;
 
+use std::fmt::Display;
 use std::io::{stdout, Stdout};
 use std::time::Duration;
 
@@ -93,9 +94,13 @@ pub fn run<A: App>(app: &mut A, title: Option<String>) -> Result<(), ErrorKind> 
     Ok(())
 }
 
+pub fn set_title<S: Display>(title: &S) -> Result<(), ErrorKind> {
+    execute!(stdout(), SetTitle(title))
+}
+
 fn setup_terminal(title: Option<String>) -> Result<Terminal<CrosstermBackend<Stdout>>, ErrorKind> {
     if let Some(title) = title {
-        execute!(stdout(), SetTitle(&title))?;
+        set_title(&title)?;
     }
 
     enable_raw_mode()?;
